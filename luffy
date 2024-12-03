@@ -1,0 +1,97 @@
+Step 1: Set Up Your Project
+Create a new directory for your project:
+
+mkdir mysql-node-app
+cd mysql-node-app
+
+Initialize the project:
+
+npm init -y
+
+Install the required package for MySQL interaction:
+
+npm install mysql2
+
+
+Step 2: Create a MySQL Database
+
+CREATE DATABASE testdb;
+USE testdb;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE
+);
+
+
+Step 3: Create the Application Code
+
+Create a index.js file in your project directory and add the following code:
+
+
+const mysql = require('mysql2/promise');
+
+// Database configuration
+const dbConfig = {
+    host: 'localhost',
+    user: 'your_username', // Replace with your MySQL username
+    password: 'your_password', // Replace with your MySQL password
+    database: 'testdb',
+};
+
+async function main() {
+    // Connect to the database
+    const connection = await mysql.createConnection(dbConfig);
+    console.log('Connected to the database.');
+
+    // CREATE operation
+    async function createUser(name, email) {
+        const [result] = await connection.execute('INSERT INTO users (name, email) VALUES (?, ?)', [name, email]);
+        console.log('User created with ID:', result.insertId);
+    }
+
+    // READ operation
+    async function getUsers() {
+        const [rows] = await connection.query('SELECT * FROM users');
+        console.log('Users:', rows);
+    }
+
+    // UPDATE operation
+    async function updateUser(id, name, email) {
+        const [result] = await connection.execute('UPDATE users SET name = ?, email = ? WHERE id = ?', [name, email, id]);
+        console.log(`Updated ${result.affectedRows} row(s).`);
+    }
+
+    // DELETE operation
+    async function deleteUser(id) {
+        const [result] = await connection.execute('DELETE FROM users WHERE id = ?', [id]);
+        console.log(`Deleted ${result.affectedRows} row(s).`);
+    }
+
+    // Example usage
+    await createUser('John Doe', 'john@example.com'); // Add a new user
+    await getUsers(); // Fetch all users
+    await updateUser(1, 'Jane Doe', 'jane@example.com'); // Update the user with ID 1
+    await deleteUser(1); // Delete the user with ID 1
+
+    // Close the connection
+    await connection.end();
+}
+
+main().catch(console.error);
+
+
+Step 4: Run the Application
+
+Start your MySQL server if it isn’t already running.
+
+Run the Node.js script:
+
+node index.js
+
+
+Additional Notes
+Replace your_username and your_password with your actual MySQL username and password in the dbConfig object.
+Ensure that the MySQL server is running locally on localhost. If it's hosted elsewhere, update the host field in the dbConfig.
+To handle errors gracefully in production, implement error handling for database operations.
